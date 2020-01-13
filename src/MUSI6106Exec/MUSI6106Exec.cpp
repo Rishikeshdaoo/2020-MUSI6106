@@ -1,11 +1,11 @@
 
 #include <iostream>
+#include <fstream>
 #include <ctime>
 
 #include "MUSI6106Config.h"
 
 #include "AudioFileIf.h"
-//#include "CombFilterIf.h"
 
 using std::cout;
 using std::endl;
@@ -30,81 +30,58 @@ int main(int argc, char* argv[])
     std::fstream            hOutputFile;
     CAudioFileIf::FileSpec_t stFileSpec;
 
-    //CCombFilterIf   *pInstance = 0;
-    //CCombFilterIf::create(pInstance);
     showClInfo();
 
     //////////////////////////////////////////////////////////////////////////////
     // parse command line arguments
-    if (argc < 2)
-    {
-        cout << "Missing audio input path!";
-        return -1;
-    }
-    else
-    {
-        sInputFilePath = argv[1];
-        sOutputFilePath = sInputFilePath + ".txt";
-    }
+
+    sInputFilePath = "/Users/marketinggramusic/Documents/Sem2/AudioSoftwareEngg/sweep.wav";
+    sOutputFilePath = "/Users/marketinggramusic/Documents/Sem2/AudioSoftwareEngg/sweep.txt";
 
     //////////////////////////////////////////////////////////////////////////////
     // open the input wave file
+    
+    stFileSpec.eFormat = CAudioFileIf::FileFormat_t::kFileFormatWav;
+    stFileSpec.eBitStreamType = CAudioFileIf::BitStream_t::kFileBitStreamInt16;
+    stFileSpec.iNumChannels = 2;
+    stFileSpec.fSampleRateInHz = 44100;
+    
     CAudioFileIf::create(phAudioFile);
-    phAudioFile->openFile(sInputFilePath, CAudioFileIf::kFileRead);
-    if (!phAudioFile->isOpen())
-    {
-        cout << "Wave file open error!";
-        return -1;
-    }
-    phAudioFile->getFileSpec(stFileSpec);
+    phAudioFile->openFile(sInputFilePath, CAudioFileIf::FileIoType_t::kFileRead, &stFileSpec);
 
     //////////////////////////////////////////////////////////////////////////////
     // open the output text file
-    hOutputFile.open(sOutputFilePath.c_str(), std::ios::out);
-    if (!hOutputFile.is_open())
-    {
-        cout << "Text file open error!";
-        return -1;
-    }
+    hOutputFile.open(sOutputFilePath, std::fstream::out);
 
     //////////////////////////////////////////////////////////////////////////////
     // allocate memory
-    ppfAudioData = new float*[stFileSpec.iNumChannels];
-    for (int i = 0; i < stFileSpec.iNumChannels; i++)
-        ppfAudioData[i] = new float[kBlockSize];
-
-    time = clock();
+    int sizeOfBuffer = sizeof(float) * kBlockSize;
+    ppfAudioData = (float**) malloc(sizeof(float) * 2);
+    *ppfAudioData = (float*) malloc(sizeOfBuffer);
+    *(ppfAudioData+1) = (float*) malloc(sizeOfBuffer);
+    
     //////////////////////////////////////////////////////////////////////////////
-    // get audio data and write it to the output file
-    while (!phAudioFile->isEof())
-    {
-        long long iNumFrames = kBlockSize;
-        phAudioFile->readData(ppfAudioData, iNumFrames);
-
-        cout << "\r" << "reading and writing";
-
-        for (int i = 0; i < iNumFrames; i++)
-        {
-            for (int c = 0; c < stFileSpec.iNumChannels; c++)
-            {
-                hOutputFile << ppfAudioData[c][i] << "\t";
-            }
-            hOutputFile << endl;
+    // get audio data and write it to the output text file (one column per channel)
+    long long fileData = sizeOfBuffer;
+    
+    while(fileData!=0){
+        phAudioFile->readData(ppfAudioData, fileData);
+        
+        for(int buf =0; buf<fileData; buf++){
+            hOutputFile << ppfAudioData[0][buf] << "\t" << ppfAudioData[1][buf] <<endl;
         }
+
     }
-
-    cout << "\nreading/writing done in: \t" << (clock() - time)*1.F / CLOCKS_PER_SEC << " seconds." << endl;
-
+    
     //////////////////////////////////////////////////////////////////////////////
-    // clean-up
+    // clean-up (close files and free memory)
+    delete *ppfAudioData;
+    delete *(ppfAudioData+1);
+    delete ppfAudioData;
     CAudioFileIf::destroy(phAudioFile);
     hOutputFile.close();
 
-    for (int i = 0; i < stFileSpec.iNumChannels; i++)
-        delete[] ppfAudioData[i];
-    delete[] ppfAudioData;
-    ppfAudioData = 0;
-
+    // all done
     return 0;
 
 }
