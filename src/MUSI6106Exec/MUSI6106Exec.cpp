@@ -35,8 +35,8 @@ int main(int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////////////
     // parse command line arguments
 
-    sInputFilePath = "/Users/marketinggramusic/Documents/Sem2/AudioSoftwareEngg/sweep.wav";
-    sOutputFilePath = "/Users/marketinggramusic/Documents/Sem2/AudioSoftwareEngg/sweep.txt";
+    sInputFilePath = argv[1];
+    sOutputFilePath = argv[2];
 
     //////////////////////////////////////////////////////////////////////////////
     // open the input wave file
