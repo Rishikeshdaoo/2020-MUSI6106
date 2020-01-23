@@ -132,12 +132,12 @@ int main(int argc, char* argv[])
     for (int i = 0; i < stFileSpec.iNumChannels; i++){
         delete[] ppfAudioInput[i];
         delete[] ppfAudioOutput[i];
-        
-        ppfAudioInput = 0;
-        ppfAudioOutput =0;
     }
+    
     delete[] ppfAudioInput;
+    delete[] ppfAudioOutput;
     ppfAudioInput = 0;
+    ppfAudioOutput = 0;
             
     return 0;
 }
