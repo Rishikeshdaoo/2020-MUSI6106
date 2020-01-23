@@ -8,6 +8,7 @@
 #include "Util.h"
 
 #include "CombFilterIf.h"
+#include "CombFilter.h"
 
 static const char*  kCMyProjectBuildDate             = __DATE__;
 
@@ -54,37 +55,73 @@ const char*  CCombFilterIf::getBuildDate ()
     return kCMyProjectBuildDate;
 }
 
-Error_t CCombFilterIf::create( CCombFilterIf*& pCCombFilter)
-{
-    return kNoError;
+Error_t CCombFilterIf::create(CCombFilterIf*& pCCombFilter){
+    
+    pCCombFilter   = new CCombFilterBase();
+
+        if (!pCCombFilter)
+            return kMemError;
+
+        return kNoError;
 }
 
-Error_t CCombFilterIf::destroy (CCombFilterIf*& pCCombFilter)
-{
+Error_t CCombFilterIf::destroy (CCombFilterIf*& pCCombFilter){
+    
+    delete pCCombFilter;
+    pCCombFilter = 0;
+    
     return kNoError;
 }
 
 Error_t CCombFilterIf::init( CombFilterType_t eFilterType, float fMaxDelayLengthInS, float fSampleRateInHz, int iNumChannels )
 {
+    Error_t error = kNoError;
+    if(!m_bIsInitialized){
+        error = initInternal(eFilterType, fMaxDelayLengthInS, fSampleRateInHz, iNumChannels);
+    }
+    if(error != kNoError){
+        return kNotInitializedError;
+    }
     return kNoError;
 }
 
+
 Error_t CCombFilterIf::reset ()
 {
+    Error_t error = kNoError;
+    if(m_bIsInitialized){
+        error = resetInternal();
+    }
+    if(error != kNoError){
+        return kNotInitializedError;
+    }
+    
     return kNoError;
 }
 
 Error_t CCombFilterIf::process( float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames )
 {
+    Error_t error = kNoError;
+    error = filterCallInternal(ppfInputBuffer, ppfOutputBuffer, iNumberOfFrames);
+    if(error != kNoError){
+        return kFunctionIllegalCallError;
+    }
+    
     return kNoError;
 }
 
 Error_t CCombFilterIf::setParam( FilterParam_t eParam, float fParamValue )
 {
+    Error_t error = kNoError;
+    error = setParamInternal(eParam, fParamValue);
+    if(error != kNoError){
+        return kNotInitializedError;
+    }
     return kNoError;
 }
 
 float CCombFilterIf::getParam( FilterParam_t eParam ) const
 {
+    getParamInternal(eParam);
     return 0;
 }

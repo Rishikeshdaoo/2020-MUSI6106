@@ -3,7 +3,7 @@
 
 #include "ErrorDef.h"
 
-class CCombFilterBase;
+//class CCombFilterBase;
 
 /*! \brief interface class for the comb filter (FIR & IIR)
 */
@@ -51,6 +51,7 @@ public:
     \param pCCombFilterIf pointer to the new class
     \return Error_t
     */
+    
     static Error_t create (CCombFilterIf*& pCCombFilterIf);
     
     /*! destroys a comb filter instance
@@ -66,7 +67,7 @@ public:
     \param iNumChannels number of audio channels
     \return Error_t
     */
-    Error_t init (CombFilterType_t eFilterType, float fMaxDelayLengthInS, float fSampleRateInHz, int iNumChannels);
+    Error_t init (CombFilterType_t eFilterType, float fMaxDelayLengthInS, float fSampleRateInHz, int iNumChannels) ;
     
     /*! resets the internal variables (requires new call of init)
     \return Error_t
@@ -84,7 +85,7 @@ public:
     \param eParam
     \return float
     */
-    float   getParam (FilterParam_t eParam) const;
+    float getParam (FilterParam_t eParam) const;
     
     /*! processes one block of audio
     \param ppfInputBuffer input buffer [numChannels][iNumberOfFrames]
@@ -100,9 +101,15 @@ protected:
 
 private:
     bool            m_bIsInitialized;   //!< internal bool to check whether the init function has been called
-    CCombFilterBase *m_pCCombFilter;    //!< handle of the comb filter
-
+    CCombFilterIf   *m_pCCombFilter;    //!< handle of the comb filter
     float           m_fSampleRate;      //!< audio sample rate in Hz
+
+    virtual Error_t initInternal(CombFilterType_t eFilterType, float fMaxDelayLengthInS, float fSampleRateInHz, int iNumChannels) = 0;
+    virtual Error_t resetInternal() = 0;
+    virtual Error_t setParamInternal(FilterParam_t eParam, float fParamValue) = 0;
+    virtual float getParamInternal( FilterParam_t eParam ) const = 0;
+    
+    virtual Error_t filterCallInternal(float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames) = 0;
 };
 
 #endif // #if !defined(__CombFilterIf_hdr__)
