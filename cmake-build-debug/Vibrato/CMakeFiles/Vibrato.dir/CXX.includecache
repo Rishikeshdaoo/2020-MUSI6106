@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../inc/ErrorDef.h
+
+../src/inc/Lfo.h
+ErrorDef.h
+-
+RingBuffer.h
+../src/inc/RingBuffer.h
+Math.h
+-
+
+../src/inc/RingBuffer.h
+cassert
+-
+algorithm
+-
+cmath
+-
+
+../src/inc/Vibrato.h
+math.h
+-
+ErrorDef.h
+-
+Lfo.h
+../src/inc/Lfo.h
+
+/Users/marketinggramusic/Documents/Sem2/AudioSoftwareEngg/ASE_Main/2020-MUSI6106/src/Vibrato/Vibrato.cpp
+ErrorDef.h
+/Users/marketinggramusic/Documents/Sem2/AudioSoftwareEngg/ASE_Main/2020-MUSI6106/src/Vibrato/ErrorDef.h
+RingBuffer.h
+/Users/marketinggramusic/Documents/Sem2/AudioSoftwareEngg/ASE_Main/2020-MUSI6106/src/Vibrato/RingBuffer.h
+Vibrato.h
+/Users/marketinggramusic/Documents/Sem2/AudioSoftwareEngg/ASE_Main/2020-MUSI6106/src/Vibrato/Vibrato.h
+
