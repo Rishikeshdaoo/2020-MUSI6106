@@ -50,7 +50,6 @@ CAudioFileIf::~CAudioFileIf()
 Error_t CAudioFileIf::reset( bool bFreeMemory /*= false*/ )
 {
     Error_t eErr = closeFile ();
-    
     if (eErr != kNoError)
         return eErr;
 

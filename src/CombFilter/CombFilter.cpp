@@ -1,8 +1,5 @@
 //
-//  CombFilter.cpp
-//  CombFilter
-//
-//  Created by MarketingGRAMusic on 1/21/20.
+// Created by Rishikesh Daoo on 1/20/20.
 //
 
 #include <stdio.h>
@@ -25,32 +22,38 @@ CCombFilterBase::~CCombFilterBase()
     reset();
 }
 
-Error_t CCombFilterBase::firFunction(float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames){
-    
-    int head = 0;
-//    int tail = 0;
+Error_t CCombFilterBase::firFunction(float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames) {
+
     int delay = m_filterDelay * m_sampleRate;
-    
-    for (int c = 0; c < m_numOfChannels; c++)
-    {
-        for (int i = 0; i < delay; i++)
-        {
-            ppfOutputBuffer[c][i] = ppfInputBuffer[c][i];
-            ppfDelayLine[c][i] = ppfInputBuffer[c][i];
-        }
-        
-        for (int j = delay; j < iNumberOfFrames; j++){
-            ppfOutputBuffer[c][j] += m_filterGain * ppfDelayLine[c][head];
-            head++;
-            ppfDelayLine[c][head] = ppfInputBuffer[c][head];
+
+    if(delay == 0){ delay = 1;}
+
+    for (int c = 0; c < m_numOfChannels; c++) {
+        for (int i = 0; i < iNumberOfFrames; i++) {
+            ppfOutputBuffer[c][i] = ppfInputBuffer[c][i] + (m_filterGain * ppfDelayLine[c][delay - 1]);
+            int output = ppfOutputBuffer[c][i];
+            for (int idx = delay - 1; idx > 0; idx--)
+                ppfDelayLine[c][idx] = ppfDelayLine[c][idx - 1];
+            ppfDelayLine[c][0] = ppfInputBuffer[c][i];
         }
     }
     return kNoError;
-};
-
+}
 
 Error_t CCombFilterBase::iirFunction(float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames){
-  
+
+    int delay = m_filterDelay * m_sampleRate;
+
+    if(delay == 0){ delay = 1;}
+
+    for (int c = 0; c < m_numOfChannels; c++) {
+        for (int i = 0; i < iNumberOfFrames; i++) {
+            ppfOutputBuffer[c][i] = ppfInputBuffer[c][i] + (m_filterGain * ppfDelayLine[c][delay - 1]);
+            for (int j = delay - 1; j > 0; j--)
+                ppfDelayLine[c][j] = ppfDelayLine[c][j - 1];
+            ppfDelayLine[c][0] = ppfOutputBuffer[c][i];
+        }
+    }
     return kNoError;
 }
 
@@ -59,14 +62,14 @@ Error_t CCombFilterBase::initInternal(CombFilterType_t eFilterType, float fMaxDe
     m_maxFilterDelay = fMaxDelayLengthInS;
     m_numOfChannels = iNumChannels;
     m_sampleRate = fSampleRateInHz;
-    
+
     int delaySamples = (int) m_maxFilterDelay * m_sampleRate;
-    
+
     ppfDelayLine = new float*[m_numOfChannels];
     for (int i = 0; i < m_numOfChannels; i++){
         ppfDelayLine[i] = new float[delaySamples]();
     }
-    
+
     return kNoError;
 }
 
@@ -75,26 +78,35 @@ Error_t CCombFilterBase::resetInternal(){
     m_maxFilterDelay = 0;
     m_numOfChannels = 0;
     m_sampleRate = 0;
-    
+
+// TODO: Delete the delay line after use
+//    for(int i=0; i<m_numOfChannels; i++){
+//        delete[] delayLi
+//    }
+
     return kNoError;
 }
 
 
 Error_t CCombFilterBase::setParamInternal(FilterParam_t eParam, float fParamValue){
-   
+
     if(eParam == kParamGain){
         m_filterGain = fParamValue;
     }
     else if(eParam == kParamDelay){
-        m_filterDelay = fParamValue;
+        if(fParamValue > m_maxFilterDelay){
+            m_filterDelay = m_maxFilterDelay;
+        }else{
+            m_filterDelay = fParamValue;
+        }
     }
-    
+
     return kNoError;
 }
 
 
 float CCombFilterBase::getParamInternal( FilterParam_t eParam ) const {
-    
+
     if(eParam == kParamGain){
         return m_filterGain;
     }
@@ -104,16 +116,16 @@ float CCombFilterBase::getParamInternal( FilterParam_t eParam ) const {
     return 0;
 }
 
-Error_t CCombFilterBase::filterCallInternal(float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames){
-    
+Error_t CCombFilterBase::processInternal( float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames){
+
+    Error_t error = kNoError;
+
     if(m_filterType == kCombFIR){
-        firFunction(ppfInputBuffer, ppfOutputBuffer, iNumberOfFrames);
+        error = firFunction(ppfInputBuffer, ppfOutputBuffer, iNumberOfFrames);
     }
     else if(m_filterType == kCombIIR){
-        iirFunction(ppfInputBuffer, ppfOutputBuffer, iNumberOfFrames);
+        error = iirFunction(ppfInputBuffer, ppfOutputBuffer, iNumberOfFrames);
     }
+
+    return error;
 }
-
-
-
-

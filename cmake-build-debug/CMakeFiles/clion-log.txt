@@ -1,0 +1,13 @@
+/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /Users/marketinggramusic/Documents/Sem2/AudioSoftwareEngg/Assign1CombFilter/ass1
+-- ******************
+-- Targets added:
+-- MUSI6106Exec
+-- AudioFileIO
+-- CombFilter
+-- ******************
+-- 
+-- MUSI6106Version:0.0.0.1
+-- 
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /Users/marketinggramusic/Documents/Sem2/AudioSoftwareEngg/Assign1CombFilter/ass1/cmake-build-debug

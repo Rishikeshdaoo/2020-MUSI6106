@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../inc/ErrorDef.h
+
+../src/inc/AudioFileIf.h
+string
+-
+fstream
+-
+algorithm
+-
+ErrorDef.h
+../src/inc/ErrorDef.h
+
+../src/inc/CombFilterIf.h
+ErrorDef.h
+../src/inc/ErrorDef.h
+
+/Users/marketinggramusic/Documents/Sem2/AudioSoftwareEngg/Assign1CombFilter/ass1/src/MUSI6106Exec/MUSI6106Exec.cpp
+iostream
+-
+ctime
+-
+MUSI6106Config.h
+/Users/marketinggramusic/Documents/Sem2/AudioSoftwareEngg/Assign1CombFilter/ass1/src/MUSI6106Exec/MUSI6106Config.h
+AudioFileIf.h
+/Users/marketinggramusic/Documents/Sem2/AudioSoftwareEngg/Assign1CombFilter/ass1/src/MUSI6106Exec/AudioFileIf.h
+CombFilterIf.h
+/Users/marketinggramusic/Documents/Sem2/AudioSoftwareEngg/Assign1CombFilter/ass1/src/MUSI6106Exec/CombFilterIf.h
+
+inc/MUSI6106Config.h
+
