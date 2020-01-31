@@ -79,10 +79,13 @@ Error_t CCombFilterBase::resetInternal(){
     m_numOfChannels = 0;
     m_sampleRate = 0;
 
-// TODO: Delete the delay line after use
-//    for(int i=0; i<m_numOfChannels; i++){
-//        delete[] delayLi
-//    }
+    for(int i=0; i<m_numOfChannels; i++){
+        delete[] ppfDelayLine[i];
+    }
+
+    delete[] ppfDelayLine;
+
+    ppfDelayLine =0;
 
     return kNoError;
 }
