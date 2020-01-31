@@ -535,10 +535,10 @@ int testCase5(std::string input){
 
 void testCases(){
 
-//    testCase1("../../test/sine441.wav");
-//    testCase2("../../test/sine441.wav");
-//    testCase3("../../test/noise.wav");
-//    testCase4("../../test/silence.wav");
+    testCase1("../../test/sine441.wav");
+    testCase2("../../test/sine441.wav");
+    testCase3("../../test/noise.wav");
+    testCase4("../../test/silence.wav");
     testCase5("../../test/noise.wav");
 }
 
