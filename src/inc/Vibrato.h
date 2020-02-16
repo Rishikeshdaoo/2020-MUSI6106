@@ -1,63 +1,43 @@
-#if !defined(__Vibrato_hdr__)
-#define __Vibrato_hdr__
+//
+// Created by Rishikesh Daoo on 2/10/20.
+//
 
-#include "ErrorDef.h"
+#ifndef MUSI6106_VIBRATO_H
+#define MUSI6106_VIBRATO_H
 
-class CLfo;
-template <class T>
-class CRingBuffer;
+#endif //MUSI6106_VIBRATO_H
 
-#include "ErrorDef.h"
 
-class CVibrato
-{
+#include <math.h>
+#include <ErrorDef.h>
+#include "Lfo.h"
+
+class CVibrato{
+
 public:
-    /*! version number */
-    enum Version_t
-    {
-        kMajor, //!< major version number
-        kMinor, //!< minor version number
-        kPatch, //!< patch version number
 
-        kNumVersionInts
-    };
+    static Error_t create(CVibrato*& pCVib);
+    static Error_t destroy(CVibrato*& pCVib);
 
-    enum VibratoParam_t
-    {
-        kParamModWidthInS,
-        kParamModFreqInHz,
+    Error_t init(float modFrequency, float mod_amplitude, float delayinSec, int iNumOfChannels, float fSampleRate);
+    Error_t reset();
 
-        kNumVibratoParams
-    };
-    static const int getVersion (const Version_t eVersionIdx);
-    static const char* getBuildDate ();
-
-    static Error_t createInstance (CVibrato*& pCVibrato);
-    static Error_t destroyInstance (CVibrato*& pCVibrato);
-
-    Error_t initInstance (float fMaxModWidthInS, float fSampleRateInHz, int iNumChannels);
-    Error_t resetInstance ();
-
-    Error_t setParam (VibratoParam_t eParam, float fParamValue);
-    float getParam (VibratoParam_t eParam) const;
-
-    Error_t process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames);
-
-protected:
-    CVibrato ();
-    virtual ~CVibrato ();
+    Error_t process(float **ppfInputBuffer, float **ppfOutputBuffer, int iNumOfFrames);
 
 private:
-    bool isInParamRange (VibratoParam_t eParam, float fValue);
+    CVibrato();
+    ~CVibrato();
 
-    bool m_bIsInitialized;
+    Error_t timeToSamples(float fTimeInSec, int &iNumOfSamples);
 
-    CLfo *m_pCLfo;
-    CRingBuffer<float> **m_ppCRingBuff;
+    CRingBuffer <float_t> **pCRingDelayLine;
+    CLfo *pSineLfo;
 
-    float   m_fSampleRate;
-    int     m_iNumChannels;
-    float m_aafParamRange[kNumVibratoParams][2];
+    float m_modFrequency;
+    int m_modAmplitude;
+    const float m_maxDelayLengthInSec;
+    int m_delayLength;
+    float m_numOfChannels;
+    int m_SampleRate;
+    long long int m_numOfSamplesProcessed;
 };
-
-#endif // #if !defined(__Vibrato_hdr__)

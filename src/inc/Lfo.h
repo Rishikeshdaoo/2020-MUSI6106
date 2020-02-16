@@ -1,104 +1,47 @@
-#if !defined(__Lfo_hdr__)
-#define __Lfo_hdr__
+//t
+// Created by Rishikesh Daoo on 2/12/20.
+//
 
-#define _USE_MATH_DEFINES
-#include <math.h>
-
-#include "ErrorDef.h"
+#include <ErrorDef.h>
 #include "RingBuffer.h"
-#include "Synthesis.h"
 
-class CLfo
-{
+#ifndef MUSI6106_LFO_H
+#define MUSI6106_LFO_H
+
+#endif //MUSI6106_LFO_H
+
+
+class CLfo{
+
+    const double pi = 4 * atan(1.0);
+
 public:
-    CLfo(float fSampleRate) :
-        m_fSampleRate(fSampleRate),
-        m_fReadIndex(0),
-        m_eType(kSine),
-        m_pCRingBuff(0)
-    {
-        for (int i = 0; i < kNumLfoParams; i++)
-            m_afParam[i]    = 0;
-
-        m_pCRingBuff = new CRingBuffer<float>(m_kiBufferLength);
-
-        setLfoType(kSine);
-    }
-    virtual ~CLfo()
-    {
-        delete m_pCRingBuff;
+    CLfo(float fModulationFreq){
+        m_modulationFrequency = fModulationFreq;
     }
 
-    enum LfoType_t
-    {
-        kSine,
-        kSaw,
-        kRect,
-
-        kNumLfoTypes
-    };
-    enum LfoParam_t
-    {
-        kLfoParamAmplitude,
-        kLfoParamFrequency,
-
-        kNumLfoParams
-    };
-    Error_t setLfoType (LfoType_t eType)
-    {
-        m_eType = eType;
-        computeWaveTable();
-        return kNoError;
+    ~CLfo(){
+        m_modulationFrequency = 0;
     }
-    Error_t setParam(LfoParam_t eParam, float fValue)
+
+    /*
+     *  Returns the LFO at a given time in seconds
+     */
+    double getWavetableLFO(double time)
     {
-        m_afParam[eParam]   = fValue;
+        return sin(2 * pi * m_modulationFrequency * time);
+    }
+
+    /*
+     *  Sets the LFO frequency
+     */
+    Error_t setLFOFrequency(float mod_frequency){
+        m_modulationFrequency = mod_frequency;
 
         return kNoError;
     }
-    float getParam (LfoParam_t eParam) const
-    {
-        return m_afParam[eParam];
-    }
 
-    float getNext()
-    {
-        float fValue = m_afParam[kLfoParamAmplitude] * m_pCRingBuff->get(m_fReadIndex);
-        m_fReadIndex = m_fReadIndex + m_afParam[kLfoParamFrequency]/m_fSampleRate * m_kiBufferLength;
 
-        if (m_fReadIndex >= m_kiBufferLength)
-            m_fReadIndex -= m_kiBufferLength;
-        return fValue;
-    }
 private:
-    void computeWaveTable ()
-    {
-        float *pfBuff = new float [m_kiBufferLength];
-        switch (m_eType)
-        {
-        case kSine:
-            CSynthesis::generateSine (pfBuff, 1.F, 1.F*m_kiBufferLength, m_kiBufferLength);
-            break;
-        case kSaw:
-            CSynthesis::generateSaw (pfBuff, 1.F, 1.F*m_kiBufferLength, m_kiBufferLength);
-            break;
-        case kRect:
-            CSynthesis::generateRect (pfBuff, 1.F, 1.F*m_kiBufferLength, m_kiBufferLength);
-            break;
-        }
-
-        m_pCRingBuff->put(pfBuff, m_kiBufferLength);
-
-        delete [] pfBuff;
-    }
-    static const int m_kiBufferLength = 4096;
-
-    float m_fSampleRate;
-    float m_fReadIndex;
-    float m_afParam[kNumLfoParams];
-
-    LfoType_t m_eType;
-
-    CRingBuffer<float> *m_pCRingBuff;
+    float m_modulationFrequency;
 };
-#endif // __Lfo_hdr__
