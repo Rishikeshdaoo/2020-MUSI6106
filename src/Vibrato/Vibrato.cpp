@@ -9,18 +9,17 @@
 #include "Vibrato.h"
 
 
-CVibrato::CVibrato(): m_maxDelayLengthInSecs(2.f) {
+CVibrato::CVibrato(): m_maxDelayLengthInSec(2.f) {
 
+    m_numOfSamplesProcessed = 0;
+    pSineLfo = new CLfo(0.f);
     m_numOfChannels = 0;
     m_modAmplitude = 0;
     m_delayLength = 0;
     m_SampleRate = 0;
-    m_modFrequency = 0;
 
-    pCRingDelayLine = 0;
-    pSineLfo = 0;
+    this->reset();
 
-    m_bIsInitialized = false;
 }
 
 CVibrato::~CVibrato(){
@@ -53,46 +52,42 @@ Error_t CVibrato::destroy(CVibrato*& pCVib) {
 
 Error_t CVibrato::init(float modFrequency, float mod_amplitude, float delayinSec, int iNumOfChannels, float fSampleRate) {
 
-    if (delayinSec <= 0 ||
-        fSampleRate <= 0 ||
-        iNumOfChannels <= 0)
-        return kFunctionInvalidArgsError;
-
-    if(modFrequency < 0 || mod_amplitude < 0 || delayinSec < 0)
-        return kFunctionInvalidArgsError;
-
     m_SampleRate = fSampleRate;
     m_modFrequency = modFrequency;
     Error_t error_delay = timeToSamples(delayinSec, m_delayLength);
     Error_t error_amp = timeToSamples(mod_amplitude, m_modAmplitude);
     m_numOfChannels = iNumOfChannels;
 
-
-    pSineLfo = new CLfo(m_modFrequency, m_SampleRate);
-
     if(error_delay != kNoError or error_amp != kNoError){
         return kUnknownError;
     }
 
-    if(m_delayLength > m_maxDelayLengthInSecs * m_SampleRate)
+    if(m_modFrequency < 0 || m_modAmplitude < 0 || m_delayLength < 0)
+        return kFunctionInvalidArgsError;
+
+    if(m_delayLength > m_maxDelayLengthInSec*m_SampleRate)
         return kFunctionInvalidArgsError;
 
     if(m_modAmplitude > m_delayLength)
         return kFunctionInvalidArgsError;
 
-    if(m_delayLength * 2 > m_maxDelayLengthInSecs * m_SampleRate)
+    if(m_delayLength * 2 > m_maxDelayLengthInSec*m_SampleRate)
         return kFunctionInvalidArgsError;
+
+    int writeOffset = 0;
+    writeOffset = m_delayLength + mod_amplitude;
+
+    pSineLfo->setLFOFrequency(m_modFrequency);
 
     pCRingDelayLine = new CRingBuffer<float> *[iNumOfChannels];
     for (int i = 0; i < iNumOfChannels; i++) {
-        pCRingDelayLine[i] = new CRingBuffer<float>(static_cast<int > (m_maxDelayLengthInSecs * m_SampleRate));
+        pCRingDelayLine[i] = new CRingBuffer<float>(static_cast<int > (m_maxDelayLengthInSec * m_SampleRate));
     }
 
-    for(int i=0; i<iNumOfChannels; ++i){
-        pCRingDelayLine[i]->setWriteIdx(2 * m_delayLength);
-    }
+    for(int i=0; i< m_numOfChannels; i++){
 
-    m_bIsInitialized = true;
+        pCRingDelayLine[i]->setWriteIdx(pCRingDelayLine[i]->getReadIdx() + writeOffset + 1);
+    }
 
     return kNoError;
 }
@@ -102,6 +97,7 @@ Error_t CVibrato::reset(){
     m_modAmplitude = 0;
     m_delayLength = 0;
     m_numOfChannels = 0;
+    m_numOfSamplesProcessed = 0;
 
     pSineLfo->setLFOFrequency(0.f);
 
@@ -109,32 +105,39 @@ Error_t CVibrato::reset(){
         pCRingDelayLine[i]-> reset();
     }
 
-    m_bIsInitialized = false;
     return kNoError;
 }
 
 Error_t CVibrato::process(float **ppfInputBuffer, float **ppfOutputBuffer, int iNumOfFrames) {
 
-    if (!m_bIsInitialized)
-        return kNotInitializedError;
-
     float zeiger = 0.F;
+    float frac = 0.F;
+    int readIndex = 0;
+    long samplesInBuffer = 0;
 
     for (int i = 0; i < iNumOfFrames; ++i) {
-
-        zeiger = m_delayLength + (m_modAmplitude * pSineLfo->getWavetableLFO());
-
-//        float val = pSineLfo->getWavetableLFO();
 
         for(int j=0; j<m_numOfChannels; j++){
 
             pCRingDelayLine[j]->putPostInc(ppfInputBuffer[j][i]);
-            ppfOutputBuffer[j][i] = pCRingDelayLine[j]->get(zeiger);
-            pCRingDelayLine[j]->getPostInc();
+            if(pCRingDelayLine[j]->getWriteIdx() > static_cast<int>(m_maxDelayLengthInSec * m_SampleRate))
+                pCRingDelayLine[j]->setWriteIdx(0);
+            double time = m_numOfSamplesProcessed / static_cast<double > (m_SampleRate);
+
+            zeiger =  samplesInBuffer + m_delayLength + (m_modAmplitude * pSineLfo->getWavetableLFO(time));
+            readIndex = floor(zeiger);
+            frac = zeiger - readIndex;
+
+            ppfOutputBuffer[j][i] = (pCRingDelayLine[j]->get(readIndex+1) * frac) + (pCRingDelayLine[j]->get(readIndex) * (1-frac));
         }
+        m_numOfSamplesProcessed++;
+        samplesInBuffer++;
+        if(samplesInBuffer > m_maxDelayLengthInSec * m_SampleRate)
+            samplesInBuffer = 0;
     }
     return kNoError;
 }
+
 
 Error_t CVibrato::timeToSamples(float fTimeInSec, int &iNumOfSamples) {
 

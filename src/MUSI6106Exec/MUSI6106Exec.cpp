@@ -18,9 +18,7 @@ void    showClInfo ();
 // main function
 int main(int argc, char* argv[]) {
     std::string sInputFilePath,                 //!< file paths
-                sOutputFilePath,
-                sOutputTxtFilePath;
-
+            sOutputFilePath;
 
     static const int kBlockSize = 1024;
 
@@ -56,7 +54,6 @@ int main(int argc, char* argv[]) {
     } else {
         sInputFilePath = argv[1];
         sOutputFilePath = sInputFilePath + "new.wav";
-        sOutputTxtFilePath = sInputFilePath + "new.txt";
         mod_freq = atof(argv[2]);
         mod_amp_secs = atof(argv[3]);
         delay_width_secs = atof(argv[4]);
@@ -77,13 +74,6 @@ int main(int argc, char* argv[]) {
 
     //////////////////////////////////////////////////////////////////////////////
     // open the output text file
-    hOutputFile.open (sOutputTxtFilePath.c_str(), std::ios::out);
-    if (!hOutputFile.is_open()){
-        cout << "Text file open error!";
-        return -1;
-    }
-
-    // open the output wav file
     phAudioOutputFile->openFile(sOutputFilePath, CAudioFileIf::kFileWrite, &stFileSpec);
     if (!phAudioOutputFile->isOpen()) {
         cout << "Wave file open error!";
@@ -103,23 +93,14 @@ int main(int argc, char* argv[]) {
     //////////////////////////////////////////////////////////////////////////////
     // Initializing the Vibrato
 
-    error = pCVibrato->init(mod_freq, mod_amp_secs, delay_width_secs, stFileSpec.iNumChannels, stFileSpec.fSampleRateInHz);
-    if(error == kFunctionInvalidArgsError){
-        cout << "Parameters passed to Vibrato are not valid. Please check."<< endl;
+    pCVibrato->init(mod_freq, mod_amp_secs, delay_width_secs, stFileSpec.iNumChannels, stFileSpec.fSampleRateInHz);
 
-    if(error == kUnknownError){
-        cout << "Memory issues." << endl;
-        }
-    }
-
-    long temp_num = 0;
     //////////////////////////////////////////////////////////////////////////////
     // get audio data and write it to the output file
     while (!phAudioInputFile->isEof())
     {
         long long iNumFrames = kBlockSize;
         phAudioInputFile->readData(ppfAudioInputData, iNumFrames);
-        temp_num = temp_num + iNumFrames;
 
         cout << "\r" << "reading and writing";
         error = pCVibrato->process(ppfAudioInputData, ppfAudioOutputData, iNumFrames);
@@ -127,15 +108,6 @@ int main(int argc, char* argv[]) {
             return -1;
 
         phAudioOutputFile->writeData(ppfAudioOutputData, iNumFrames);
-
-        for (int i = 0; i < iNumFrames; i++)
-        {
-            for (int j = 0; j < stFileSpec.iNumChannels; j++)
-            {
-                hOutputFile << ppfAudioOutputData[j][i] << " ";
-            }
-            hOutputFile << endl;
-        }
 
     }
 
