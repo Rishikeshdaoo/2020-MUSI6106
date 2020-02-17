@@ -37,7 +37,7 @@ private:
     int m_modAmplitude;
     const float m_maxDelayLengthInSec;
     int m_delayLength;
-    float m_numOfChannels;
-    int m_SampleRate;
+    int m_numOfChannels;
+    float m_SampleRate;
     long long int m_numOfSamplesProcessed;
 };
