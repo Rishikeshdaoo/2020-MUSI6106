@@ -19,7 +19,7 @@ SUITE(Vibrato)
                 pVibrato(0),
                 inputData(0),
                 outputData(0),
-                dataLength(22523),
+                dataLength(10),
                 //maxDelayLength(3.F),
                 blockLength(10),
                 numChannels(2),
