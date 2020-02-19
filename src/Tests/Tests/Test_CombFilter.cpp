@@ -263,13 +263,14 @@ SUITE(CombFilter)
         for (int c = 0; c < m_iNumChannels; c++)
             CHECK_ARRAY_CLOSE(m_ppfInputData[c], m_ppfOutputData[c], m_iDataLength, 1e-3);
     }
+
     TEST_FIXTURE(CombFilterData, VaryingBlocksize)
     {
         //Fir
         m_pCombFilter->init(CCombFilterIf::kCombFIR, m_fMaxDelayLength, m_fSampleRate, m_iNumChannels);
 
         for (int c = 0; c < m_iNumChannels; c++)
-            CSynthesis::generateSine(m_ppfInputData[c], 387.F, m_fSampleRate, m_iDataLength, .8F, static_cast<float>(c * M_PI_2));
+            CSynthesis::generateSine (m_ppfInputData[c], 387.F, m_fSampleRate, m_iDataLength, .8F, static_cast<float>(c*M_PI_2));
         m_pCombFilter->setParam(CCombFilterIf::kParamGain, m_fGain);
         m_pCombFilter->setParam(CCombFilterIf::kParamDelay, m_fDelay);
 
@@ -279,25 +280,18 @@ SUITE(CombFilter)
         m_pCombFilter->init(CCombFilterIf::kCombFIR, m_fMaxDelayLength, m_fSampleRate, m_iNumChannels);
         m_pCombFilter->setParam(CCombFilterIf::kParamGain, m_fGain);
         m_pCombFilter->setParam(CCombFilterIf::kParamDelay, m_fDelay);
-
-        float** ppfTmp = new float* [m_iNumChannels];
-        for (int c = 0; c < m_iNumChannels; c++)
-            ppfTmp[c] = new float[17000];
         {
             int iNumFramesRemaining = m_iDataLength;
-
             while (iNumFramesRemaining > 0)
             {
 
-                int iNumFrames = std::min(static_cast<float>(iNumFramesRemaining), static_cast<float>(rand()) / RAND_MAX * 17000.F);
+                int iNumFrames = std::min(static_cast<float>(iNumFramesRemaining), static_cast<float>(rand())/RAND_MAX*17000.F);
 
                 for (int c = 0; c < m_iNumChannels; c++)
                 {
-                    m_ppfInputTmp[c] = &m_ppfInputData[c][m_iDataLength - iNumFramesRemaining];
+                    m_ppfInputTmp[c]    = &m_ppfInputData[c][m_iDataLength - iNumFramesRemaining];
                 }
-                m_pCombFilter->process(m_ppfInputTmp, ppfTmp, iNumFrames);
-                for (int c = 0; c < m_iNumChannels; c++)
-                    CVectorFloat::copy(m_ppfInputTmp[c], ppfTmp[c], iNumFrames);
+                m_pCombFilter->process(m_ppfInputTmp, m_ppfInputTmp, iNumFrames);
 
                 iNumFramesRemaining -= iNumFrames;
             }
@@ -310,7 +304,7 @@ SUITE(CombFilter)
         m_pCombFilter->init(CCombFilterIf::kCombIIR, m_fMaxDelayLength, m_fSampleRate, m_iNumChannels);
 
         for (int c = 0; c < m_iNumChannels; c++)
-            CSynthesis::generateSine(m_ppfInputData[c], 387.F, m_fSampleRate, m_iDataLength, .8F, static_cast<float>(c * M_PI_2));
+            CSynthesis::generateSine (m_ppfInputData[c], 387.F, m_fSampleRate, m_iDataLength, .8F, static_cast<float>(c*M_PI_2));
         m_pCombFilter->setParam(CCombFilterIf::kParamGain, m_fGain);
         m_pCombFilter->setParam(CCombFilterIf::kParamDelay, m_fDelay);
 
@@ -325,15 +319,13 @@ SUITE(CombFilter)
             while (iNumFramesRemaining > 0)
             {
 
-                int iNumFrames = std::min(static_cast<float>(iNumFramesRemaining), static_cast<float>(rand()) / RAND_MAX * 17000.F);
+                int iNumFrames = std::min(static_cast<float>(iNumFramesRemaining), static_cast<float>(rand())/RAND_MAX*17000.F);
 
                 for (int c = 0; c < m_iNumChannels; c++)
                 {
-                    m_ppfInputTmp[c] = &m_ppfInputData[c][m_iDataLength - iNumFramesRemaining];
+                    m_ppfInputTmp[c]    = &m_ppfInputData[c][m_iDataLength - iNumFramesRemaining];
                 }
-                m_pCombFilter->process(m_ppfInputTmp, ppfTmp, iNumFrames);
-                for (int c = 0; c < m_iNumChannels; c++)
-                    CVectorFloat::copy(m_ppfInputTmp[c], ppfTmp[c], iNumFrames);
+                m_pCombFilter->process(m_ppfInputTmp, m_ppfInputTmp, iNumFrames);
 
                 iNumFramesRemaining -= iNumFrames;
             }
@@ -341,10 +333,6 @@ SUITE(CombFilter)
 
         for (int c = 0; c < m_iNumChannels; c++)
             CHECK_ARRAY_CLOSE(m_ppfInputData[c], m_ppfOutputData[c], m_iDataLength, 1e-3);
-
-        for (int c = 0; c < m_iNumChannels; c++)
-            delete[]ppfTmp[c];
-        delete[] ppfTmp;
     }
 }
 

@@ -1,6 +1,6 @@
 #include "MUSI6106Config.h"
 
-#ifdef COMPILEME //WITH_TESTS
+#ifdef WITH_TESTS
 #include <cassert>
 #include <cstdio>
 #include <algorithm>
