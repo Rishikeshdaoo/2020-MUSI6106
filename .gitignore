@@ -39,7 +39,3 @@ bld
 /src/Tests/TestExec/*.bak
 /src/Tests/Tests/*.bak
 /src/CombFilter/*.bak
-/src/inc/*.bak
-/bin
-/doc
-/lib

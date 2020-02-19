@@ -7,7 +7,6 @@ set (DtwLIB Dtw)
 set (VibratoLIB Vibrato)
 set (AudioLIB AudioFileIO)
 set (SndLIB sndlib)
-set (FftLIB Fft)
 
 ##############################################################
 ## unitTest++
