@@ -28,7 +28,8 @@ int main(int argc, char* argv[])
 
     float                   **ppfAudioData = 0,
                             *pComplexSpectrum = 0,
-                            *pBufferedInput = 0;
+                            *pMagSpectrum = 0,
+                            *pInputBuffer = 0;
 
     CAudioFileIf            *phAudioFile = 0;
     std::fstream            hOutputFile;
@@ -66,16 +67,21 @@ int main(int argc, char* argv[])
 
     //////////////////////////////////////////////////////////////////////////////
     // allocate memory
-    int sizeOfBuffer = sizeof(float) * kHopSize;
-    int sizeOfSpectrum = sizeof(float) * kBlockSize;
+//    int sizeOfBuffer = sizeof(float) * kBlockSize;
+//    int sizeOfSpectrum = sizeof(float) * kBlockSize;
 
-    ppfAudioData = (float**) malloc(sizeof(float) * 2);
-    *ppfAudioData = (float*) malloc(sizeOfBuffer);
-    *(ppfAudioData+1) = (float*) malloc(sizeOfBuffer);
+    int sizeOfBuffer = kHopSize;
+    int sizeOfSpectrum = kBlockSize;
 
-    pBufferedInput = new float[kBlockSize]();
-    pComplexSpectrum = (float*) malloc(sizeOfSpectrum);
+//    ppfAudioData = (float**) malloc(sizeof(float) * 2);
+    ppfAudioData = new float*[2];
+    *ppfAudioData = new float [kHopSize];
+    *(ppfAudioData+1) = new float [kHopSize];
 
+    pMagSpectrum = new float [sizeOfBuffer+1];
+    pComplexSpectrum = new float [sizeOfSpectrum];
+
+    pInputBuffer = new float [kBlockSize]();
 
     //////////////////////////////////////////////////////////////////////////////
     // Create FFT instance and init
@@ -86,22 +92,26 @@ int main(int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////////////
     // get audio data and write it to the output text file (one column per channel)
     long long fileData = sizeOfBuffer;
-    
-    while(fileData!=0){
-        phAudioFile->readData(&&pBufferedInput[kBlockSize], fileData);
 
-        for(int i=0; i<kBlockSize; i++) {
+    while(fileData!=0) {
+        phAudioFile->readData(ppfAudioData, fileData);
 
+        for (int i = 0; i < fileData; i++) {
+            pInputBuffer[kHopSize + i] = ppfAudioData[0][i];
         }
 
-        pCFft->doFft(pComplexSpectrum, ppfAudioData[0]);
+        pCFft->doFft(pComplexSpectrum, pInputBuffer);
 
-    for (int buf = 0; buf < fileData; buf++) {
-//                    hOutputFile << ppfAudioData[0][buf];
-                //<< "\t" << ppfAudioData[1][buf] <<endl;
+        pCFft->getMagnitude(pMagSpectrum, pComplexSpectrum);
+
+        for (int i = 0; i < sizeOfBuffer; i++) {
+            pInputBuffer[i] = pInputBuffer[kHopSize + i];
+        }
+
+        for(int buf = 0; buf < sizeOfBuffer+1; buf++) {
+            hOutputFile << pMagSpectrum[buf] << endl;
             }
         }
-    }
     
     //////////////////////////////////////////////////////////////////////////////
     // clean-up (close files and free memory)
