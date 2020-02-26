@@ -19,10 +19,10 @@ SUITE(Vibrato)
                 pVibrato(0),
                 inputData(0),
                 outputData(0),
-                dataLength(10),
+                dataLength(137),
                 //maxDelayLength(3.F),
                 blockLength(10),
-                numChannels(2),
+                numChannels(3),
                 sampleRate(8000),
                 delay_width(.002F),
                 mod_freq(11.F),
@@ -95,7 +95,7 @@ SUITE(Vibrato)
 
     TEST_FIXTURE(VibratoData, mod_amp_zero)
     {
-        pVibrato->init(mod_freq,0,delay_width,numChannels,sampleRate);
+        pVibrato->init(mod_freq,0,(delay_width),numChannels,sampleRate);
 
         // Generating an input for the test case.
         for(int i=0; i< numChannels; i++){
@@ -128,7 +128,7 @@ SUITE(Vibrato)
         for (int i=0; i < numChannels; i++)
         {
             for (int j = static_cast<int>(round(((delay_width + mod_amp)*sampleRate))); j < dataLength; j++) {
-                        CHECK_EQUAL(dc_value, outputData[i][j]);
+                        CHECK_CLOSE(dc_value, outputData[i][j], 1e-6F);
             }
         }
     }
