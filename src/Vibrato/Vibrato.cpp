@@ -9,9 +9,8 @@
 #include "Vibrato.h"
 
 
-CVibrato::CVibrato() {
+CVibrato::CVibrato(): m_maxDelayLengthInSecs(2.f) {
 
-    m_maxDelayLength = 0;
     m_numOfChannels = 0;
     m_modAmplitude = 0;
     m_delayLength = 0;
@@ -68,26 +67,29 @@ Error_t CVibrato::init(float modFrequency, float mod_amplitude, float delayinSec
     Error_t error_amp = timeToSamples(mod_amplitude, m_modAmplitude);
     m_numOfChannels = iNumOfChannels;
 
-    m_maxDelayLength = 2 * m_delayLength;
 
-    pSineLfo = new CLfo(modFrequency, m_SampleRate);
+    pSineLfo = new CLfo(m_modFrequency, m_SampleRate);
 
     if(error_delay != kNoError or error_amp != kNoError){
         return kUnknownError;
     }
 
-    if(m_delayLength > m_maxDelayLength)
+    if(m_delayLength > m_maxDelayLengthInSecs * m_SampleRate)
         return kFunctionInvalidArgsError;
 
     if(m_modAmplitude > m_delayLength)
         return kFunctionInvalidArgsError;
 
-    if(m_delayLength * 2 > m_maxDelayLength)
+    if(m_delayLength * 2 > m_maxDelayLengthInSecs * m_SampleRate)
         return kFunctionInvalidArgsError;
 
     pCRingDelayLine = new CRingBuffer<float> *[iNumOfChannels];
     for (int i = 0; i < iNumOfChannels; i++) {
-        pCRingDelayLine[i] = new CRingBuffer<float>(static_cast<int > (m_maxDelayLength));
+        pCRingDelayLine[i] = new CRingBuffer<float>(static_cast<int > (m_maxDelayLengthInSecs * m_SampleRate));
+    }
+
+    for(int i=0; i<iNumOfChannels; ++i){
+        pCRingDelayLine[i]->setWriteIdx(2 * m_delayLength);
     }
 
     m_bIsInitialized = true;
@@ -129,8 +131,6 @@ Error_t CVibrato::process(float **ppfInputBuffer, float **ppfOutputBuffer, int i
         for(int j=0; j<m_numOfChannels; j++){
 
             pCRingDelayLine[j]->putPostInc(ppfInputBuffer[j][i]);
-            float val1 = pCRingDelayLine[j]->get(readIndex);
-            float val = (pCRingDelayLine[j]->get(readIndex+1) * frac) + (pCRingDelayLine[j]->get(readIndex) * (1-frac));
             ppfOutputBuffer[j][i] = (pCRingDelayLine[j]->get(readIndex+1) * frac) + (pCRingDelayLine[j]->get(readIndex) * (1-frac));
             pCRingDelayLine[j]->getPostInc();
         }
