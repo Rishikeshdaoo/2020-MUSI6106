@@ -35,7 +35,7 @@ private:
 
     float m_modFrequency;
     int m_modAmplitude;
-    const float m_maxDelayLengthInSec;
+    float m_maxDelayLengthInSec;
     int m_delayLength;
     int m_numOfChannels;
     float m_SampleRate;

@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
                 sOutputTxtFilePath;
 
 
-    static const int kBlockSize = 1024;
+    static const int kBlockSize = 10;
 
     clock_t         time =0;
 
