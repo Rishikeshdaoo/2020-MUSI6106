@@ -59,6 +59,9 @@ Error_t CVibrato::init(float modFrequency, float mod_amplitude, float delayinSec
         iNumOfChannels <= 0)
         return kFunctionInvalidArgsError;
 
+    if(modFrequency < 0 || mod_amplitude < 0 || delayinSec < 0)
+        return kFunctionInvalidArgsError;
+
     m_SampleRate = fSampleRate;
     m_modFrequency = modFrequency;
     Error_t error_delay = timeToSamples(delayinSec, m_delayLength);
@@ -72,9 +75,6 @@ Error_t CVibrato::init(float modFrequency, float mod_amplitude, float delayinSec
     if(error_delay != kNoError or error_amp != kNoError){
         return kUnknownError;
     }
-
-    if(m_modFrequency < 0 || m_modAmplitude < 0 || m_delayLength < 0)
-        return kFunctionInvalidArgsError;
 
     if(m_delayLength > m_maxDelayLength)
         return kFunctionInvalidArgsError;
@@ -106,7 +106,7 @@ Error_t CVibrato::reset(){
     for(int i=0; i<m_numOfChannels; i++){
         pCRingDelayLine[i]-> reset();
     }
-    
+
     m_bIsInitialized = false;
     return kNoError;
 }
