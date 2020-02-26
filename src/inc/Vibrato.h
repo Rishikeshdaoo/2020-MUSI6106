@@ -66,13 +66,11 @@ private:
     CRingBuffer <float_t> **pCRingDelayLine;
     CLfo *pSineLfo;
 
-    //TODO: Implement the checks for the m_bIsInitialized variable
-
-    bool m_bIsInitialized;  //!< internal bool to check whether the init function has been called
-    float m_modFrequency;   //!< modulation frequency of Vibrato
-    int m_modAmplitude;     //!< modulation Amplitude of Vibrato
-    float m_maxDelayLength; //!< length of the Vibrato ring buffer
-    int m_delayLength;      //!< delay of the Vibrato
-    int m_numOfChannels;    //!< number of audio channels
-    float m_SampleRate;     //!< sampling rate of input audio
+    bool m_bIsInitialized;                  //!< internal bool to check whether the init function has been called
+    float m_modFrequency;                   //!< modulation frequency of Vibrato
+    int m_modAmplitude;                     //!< modulation Amplitude of Vibrato
+    const float m_maxDelayLengthInSecs;     //!< maximum possible length of the Vibrato ring buffer in secs
+    int m_delayLength;                      //!< delay of the Vibrato
+    int m_numOfChannels;                    //!< number of audio channels
+    float m_SampleRate;                     //!< sampling rate of input audio
 };
