@@ -119,19 +119,17 @@ Error_t CVibrato::process(float **ppfInputBuffer, float **ppfOutputBuffer, int i
         return kNotInitializedError;
 
     float zeiger = 0.F;
-    float frac = 0.F;
-    int readIndex = 0;
 
     for (int i = 0; i < iNumOfFrames; ++i) {
 
         zeiger = m_delayLength + (m_modAmplitude * pSineLfo->getWavetableLFO());
-        readIndex = floor(zeiger);
-        frac = zeiger - readIndex;
+
+//        float val = pSineLfo->getWavetableLFO();
 
         for(int j=0; j<m_numOfChannels; j++){
 
             pCRingDelayLine[j]->putPostInc(ppfInputBuffer[j][i]);
-            ppfOutputBuffer[j][i] = (pCRingDelayLine[j]->get(readIndex+1) * frac) + (pCRingDelayLine[j]->get(readIndex) * (1-frac));
+            ppfOutputBuffer[j][i] = pCRingDelayLine[j]->get(zeiger);
             pCRingDelayLine[j]->getPostInc();
         }
     }
