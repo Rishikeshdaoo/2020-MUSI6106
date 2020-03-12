@@ -118,17 +118,7 @@ int main(int argc, char* argv[])
     delete *ppfAudioData;
     delete *(ppfAudioData+1);
     delete ppfAudioData;
-
-    delete[] pInputBuffer;
-    delete[] pComplexSpectrum;
-    delete[] pMagSpectrum;
-
-    pInputBuffer = 0;
-    pComplexSpectrum = 0;
-    pMagSpectrum = 0;
-    
     CAudioFileIf::destroy(phAudioFile);
-    CFft::destroyInstance(pCFft);
     hOutputFile.close();
 
     // all done
